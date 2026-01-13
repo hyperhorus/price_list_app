@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.tipo_producto }}{% endblock %}
+
+{% block content %}x|
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-box"></i> {{ product.tipo_producto }}
+                    {% if product.available %}
+                        <span class="badge bg-success">Disponible</span>
+                    {% else %}
+                        <span class="badge bg-secondary">No Disponible</span>
+                    {% endif %}
+                </h5>
+                <div class="btn-group">
+                    <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="{{ url_for('print_product', id=product.id) }}" class="btn btn-sm btn-info" target="_blank">
+                        <i class="fas fa-print"></i> Imprimir
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Información General</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td class="fw-bold">Clave:</td>
+                                <td>{{ product.clave_producto }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Descripción:</td>
+                                <td>{{ product.descripcion or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Medidas:</td>
+                                <td>{{ product.medidas or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Material:</td>
+                                <td>{{ product.material or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Empaque:</td>
+                                <td>{{ product.empaque or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Impresión:</td>
+                                <td>{{ product.impresion or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Colores:</td>
+                                <td>{{ product.colores or '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Precios</h6>
+                        <div class="bg-light p-3 rounded">
+                            <div class="mb-3">
+                                <small class="text-muted">Precio Unitario</small>
+                                <h4 class="text-primary mb-0">${{ "%.2f"|format(product.precio_unitario) }}</h4>
+                            </div>
+                            
+                            {% if product.precio_mayorista %}
+                            <div class="mb-3">
+                                <small class="text-muted">Precio Mayorista</small>
+                                <h5 class="text-success mb-0">${{ "%.2f"|format(product.precio_mayorista) }}</h5>
+                            </div>
+                            {% endif %}
+                            
+                            {% if product.precio_cliente %}
+                            <div class="mb-3">
+                                <small class="text-muted">Precio Cliente</small>
+                                <h5 class="text-info mb-0">${{ "%.2f"|format(product.precio_cliente) }}</h5>
+                            </div>
+                            {% endif %}
+                            
+                            {% if product.precio_promocion %}
+                            <div class="mb-3">
+                                <small class="text-muted">Precio Promoción</small>
+                                <h5 class="text-warning mb-0">${{ "%.2f"|format(product.precio_promocion) }}</h5>
+                            </div>
+                            {% endif %}
+                            
+                            {% if product.precio_cliente_mayorista %}
+                            <div class="mb-3">
+                                <small class="text-muted">Precio Cliente Mayorista</small>
+                                <h5 class="text-secondary mb-0">${{ "%.2f"|format(product.precio_cliente_mayorista) }}</h5>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-white d-flex justify-content-between">
+                <div>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <form method="POST" action="{{ url_for('toggle_availability', id=product.id) }}" style="display: inline;">
+                        {% if product.available %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-ban"></i> Marcar No Disponible
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Marcar Disponible
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+                
+                <form method="POST" action="{{ url_for('delete_product', id=product.id) }}" onsubmit="return confirm('¿Está seguro de eliminar este producto?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

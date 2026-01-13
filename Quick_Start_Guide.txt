@@ -1,0 +1,20 @@
+# 1. Create MySQL database
+mysql -u root -p
+CREATE DATABASE price_list_db;
+EXIT;
+
+# 2. Clone/create project directory
+mkdir price_list_app
+cd price_list_app
+
+# 3. Create all files (copy code from above)
+
+# 4. Run installation script
+chmod +x install_and_run.sh  # macOS/Linux
+./install_and_run.sh
+
+# OR on Windows
+install_and_run.bat
+
+# 5. Open browser
+http://localhost:5000

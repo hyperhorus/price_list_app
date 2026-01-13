@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Producto{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Crear Nuevo Producto</h5>
+            </div>
+            
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.clave_producto.label }}</label>
+                            {{ form.clave_producto(class_='form-control' + (' is-invalid' if form.clave_producto.errors else ''), placeholder='Ej: PROD-001') }}
+                            {% if form.clave_producto.errors %}
+                                <div class="invalid-feedback">{{ form.clave_producto.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.tipo_producto.label }}</label>
+                            {{ form.tipo_producto(class_='form-control' + (' is-invalid' if form.tipo_producto.errors else '')) }}
+                            {% if form.tipo_producto.errors %}
+                                <div class="invalid-feedback">{{ form.tipo_producto.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.descripcion.label }}</label>
+                        {{ form.descripcion(class_='form-control', rows=3) }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.medidas.label }}</label>
+                            {{ form.medidas(class_='form-control', placeholder='Ej: 10x20cm') }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.material.label }}</label>
+                            {{ form.material(class_='form-control', placeholder='Ej: Plástico') }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.empaque.label }}</label>
+                            {{ form.empaque(class_='form-control', placeholder='0') }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.impresion.label }}</label>
+                            {{ form.impresion(class_='form-select' + (' is-invalid' if form.impresion.errors else '')) }}
+                            {% if form.impresion.errors %}
+                                <div class="invalid-feedback">{{ form.impresion.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.colores.label }}</label>
+                            {{ form.colores(class_='form-select' + (' is-invalid' if form.colores.errors else '')) }}
+                            {% if form.colores.errors %}
+                                <div class="invalid-feedback">{{ form.colores.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-light p-3 rounded mb-3">
+                        <h6 class="mb-3"><i class="fas fa-dollar-sign"></i> Precios</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.precio_unitario.label }}</label>
+                                {{ form.precio_unitario(class_='form-control' + (' is-invalid' if form.precio_unitario.errors else ''), step='0.01', placeholder='0.00') }}
+                                {% if form.precio_unitario.errors %}
+                                    <div class="invalid-feedback">{{ form.precio_unitario.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.precio_mayorista.label }}</label>
+                                {{ form.precio_mayorista(class_='form-control', step='0.01', placeholder='0.00') }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.precio_cliente.label }}</label>
+                                {{ form.precio_cliente(class_='form-control', step='0.01', placeholder='0.00') }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.precio_promocion.label }}</label>
+                                {{ form.precio_promocion(class_='form-control', step='0.01', placeholder='0.00') }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.precio_cliente_mayorista.label }}</label>
+                                {{ form.precio_cliente_mayorista(class_='form-control', step='0.01', placeholder='0.00') }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        {{ form.available(class_='form-check-input') }}
+                        <label class="form-check-label">{{ form.available.label }}</label>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white d-flex justify-content-between">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    {{ form.submit(class_='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
