@@ -27,6 +27,13 @@ with app.app_context():
 
 # ... rest of your app.py code remains the same ...
 
+@app.context_processor
+def inject_counts():
+    """Available in ALL templates"""
+    return dict(
+        product_count=Product.query.count(),
+        customer_count=Customer.query.count()
+    )
 
 # ==================== ROUTES ====================
 
@@ -311,10 +318,30 @@ def print_all_products():
         download_name=f'ListaPrecios_{datetime.now().strftime("%Y%m%d")}.pdf'
     )
 
+from sqlalchemy import or_  # Make sure to import or_
 @app.route('/customers')
 def customers():
-    customers = Customer.query.order_by(Customer.nombre_empresa).all()
-    return render_template('customers/index.html', customers=customers)
+    # 1. Get the search term from the URL
+    search = request.args.get('search', '', type=str)
+
+    query = Customer.query
+
+    # 2. If a search term exists, filter the query
+    if search:
+        query = query.filter(
+            or_(
+                Customer.nombre_empresa.ilike(f'%{search}%'),
+                Customer.contacto_nombre.ilike(f'%{search}%'),
+                Customer.email.ilike(f'%{search}%'),
+                Customer.rfc.ilike(f'%{search}%')
+            )
+        )
+
+    # 3. Order results
+    customers = query.order_by(Customer.nombre_empresa).all()
+
+    # 4. Pass 'customers' AND 'search' back to the template
+    return render_template('customers/index.html', customers=customers, search=search)
 
 @app.route('/customer/create', methods=['GET', 'POST'])
 def create_customer():
