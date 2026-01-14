@@ -1,43 +1,11 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, IntegerField, DecimalField, SelectField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional, NumberRange, Regexp
-
-IMPRESION_CHOICES = [
-    ('', 'Seleccionar...'),
-    ('Grabado laser', 'Grabado laser'),
-    ('Serigrafia', 'Serigrafia'),
-    ('Tampografia', 'Tampografia'),
-    ('Grabado', 'Grabado'),
-    ('Grabado punta diamante', 'Grabado punta diamante'),
-    ('Sublimado', 'Sublimado'),
-    ('Fundido', 'Fundido'),
-    ('Sandblast', 'Sandblast'),
-    ('Troquelado', 'Troquelado'),
-]
-
-COLORS_CHOICES = [
-    ('', 'Seleccionar...'),
-    ('Rojo', 'Rojo'),
-    ('Azul', 'Azul'),
-    ('Verde', 'Verde'),
-    ('Amarillo', 'Amarillo'),
-    ('Negro', 'Negro'),
-    ('Blanco', 'Blanco'),
-    ('Naranja', 'Naranja'),
-    ('Rosa', 'Rosa'),
-    ('Morado', 'Morado'),
-    ('Gris', 'Gris'),
-    ('Café', 'Café'),
-    ('Humo', 'Humo'),
-    ('Dorado', 'Dorado'),
-    ('Plateado', 'Plateado'),
-    ('Dorado', 'Dorado'),
-    ('Bronce', 'Bronce'),
-    ('Multicolor', 'Multicolor'),
-]
-
+from models import ImpresionChoice, ColorsChoice
 
 class ProductForm(FlaskForm):
+    """Form for creating and editing products"""
+
     clave_producto = StringField(
         'Clave de Producto',
         validators=[
@@ -65,13 +33,13 @@ class ProductForm(FlaskForm):
 
     impresion = SelectField(
         'Tipo de Impresión',
-        choices=IMPRESION_CHOICES,
+        choices=[],  # Will be populated dynamically
         validators=[DataRequired(message='Seleccione una opción')]
     )
 
     colores = SelectField(
         'Color',
-        choices=COLORS_CHOICES,
+        choices=[],  # Will be populated dynamically
         validators=[DataRequired(message='Seleccione un color')]
     )
 
@@ -108,3 +76,43 @@ class ProductForm(FlaskForm):
     available = BooleanField('Disponible', default=True)
 
     submit = SubmitField('Guardar Producto')
+
+    def __init__(self, *args, **kwargs):
+        """Initialize form and load dynamic choices"""
+        super(ProductForm, self).__init__(*args, **kwargs)
+
+        # Load choices from database
+        self.impresion.choices = ImpresionChoice.get_choices()
+        self.colores.choices = ColorsChoice.get_choices()
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import Optional, Length, Email
+
+class CustomerForm(FlaskForm):
+    nombre_empresa = StringField(
+        'Empresa',
+        validators=[Optional(), Length(max=150)]
+    )
+
+    contacto_nombre = StringField(
+        'Contacto',
+        validators=[Optional(), Length(max=100)]
+    )
+
+    email = StringField(
+        'Email',
+        validators=[Optional(), Email(), Length(max=100)]
+    )
+
+    telefono = StringField(
+        'Teléfono',
+        validators=[Optional(), Length(max=20)]
+    )
+
+    rfc = StringField(
+        'RFC',
+        validators=[Optional(), Length(max=15)]
+    )
+
+    submit = SubmitField('Guardar Cliente')

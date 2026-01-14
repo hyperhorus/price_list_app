@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
-from models import db, Product
-from forms import ProductForm
+from models import db, Product, ImpresionChoice, ColorsChoice,Customer
+from forms import ProductForm, CustomerForm
 from config import Config
 from datetime import datetime
 from io import BytesIO
@@ -9,6 +9,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
+from flask import render_template, redirect, url_for, flash
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -17,6 +18,14 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+    # Auto-initialize choices if tables are empty
+    if ImpresionChoice.query.count() == 0 or ColorsChoice.query.count() == 0:
+        print("\n⚠️  Choice tables are empty. Initializing with default values...")
+        print("Run 'python init_choices.py' to customize choices.\n")
+
+
+# ... rest of your app.py code remains the same ...
 
 
 # ==================== ROUTES ====================
@@ -302,6 +311,54 @@ def print_all_products():
         download_name=f'ListaPrecios_{datetime.now().strftime("%Y%m%d")}.pdf'
     )
 
+@app.route('/customers')
+def customers():
+    customers = Customer.query.order_by(Customer.nombre_empresa).all()
+    return render_template('customers/index.html', customers=customers)
+
+@app.route('/customer/create', methods=['GET', 'POST'])
+def create_customer():
+    form = CustomerForm()
+
+    if form.validate_on_submit():
+        customer = Customer(
+            nombre_empresa=form.nombre_empresa.data,
+            contacto_nombre=form.contacto_nombre.data,
+            email=form.email.data,
+            telefono=form.telefono.data,
+            rfc=form.rfc.data,
+        )
+
+        db.session.add(customer)
+        db.session.commit()
+
+        flash('Cliente creado correctamente', 'success')
+        return redirect(url_for('customers'))
+
+    return render_template('customers/create.html', form=form)
+
+@app.route('/customer/<int:customer_id>/edit', methods=['GET', 'POST'])
+def edit_customer(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    form = CustomerForm(obj=customer)
+
+    if form.validate_on_submit():
+        customer.nombre_empresa = form.nombre_empresa.data
+        customer.contacto_nombre = form.contacto_nombre.data
+        customer.email = form.email.data
+        customer.telefono = form.telefono.data
+        customer.rfc = form.rfc.data
+
+        db.session.commit()
+        flash('Cliente actualizado', 'success')
+        return redirect(url_for('customers'))
+
+    return render_template('customers/edit.html', form=form, customer=customer)
+
+@app.route('/customer/<int:customer_id>')
+def view_customer(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    return render_template('customers/view.html', customer=customer)
 
 if __name__ == '__main__':
     print("\n" + "=" * 60)

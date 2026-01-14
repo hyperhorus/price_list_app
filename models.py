@@ -3,6 +3,69 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+class Customer(db.Model):
+    __tablename__ = 'customers'  # IMPORTANT: matches existing table name
+
+    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nombre_empresa = db.Column(db.String(150))
+    contacto_nombre = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    telefono = db.Column(db.String(20))
+    rfc = db.Column(db.String(15))
+
+    def __repr__(self):
+        return f'<Customer {self.nombre_empresa}>'
+
+    def to_dict(self):
+        return {
+            'customer_id': self.customer_id,
+            'nombre_empresa': self.nombre_empresa,
+            'contacto_nombre': self.contacto_nombre,
+            'email': self.email,
+            'telefono': self.telefono,
+            'rfc': self.rfc,
+        }
+
+class ImpresionChoice(db.Model):
+    """Table for printing method choices"""
+    __tablename__ = 'impresion_choice'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), unique=True, nullable=False)
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    orden = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ImpresionChoice {self.nombre}>'
+
+    @staticmethod
+    def get_choices():
+        """Get active choices for dropdown"""
+        choices = ImpresionChoice.query.filter_by(activo=True).order_by(ImpresionChoice.orden,
+                                                                        ImpresionChoice.nombre).all()
+        return [('', 'Seleccionar...')] + [(c.nombre, c.nombre) for c in choices]
+
+
+class ColorsChoice(db.Model):
+    """Table for color choices"""
+    __tablename__ = 'colors_choice'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), unique=True, nullable=False)
+    codigo_hex = db.Column(db.String(7))  # Optional: for displaying color
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    orden = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ColorsChoice {self.nombre}>'
+
+    @staticmethod
+    def get_choices():
+        """Get active choices for dropdown"""
+        choices = ColorsChoice.query.filter_by(activo=True).order_by(ColorsChoice.orden, ColorsChoice.nombre).all()
+        return [('', 'Seleccionar...')] + [(c.nombre, c.nombre) for c in choices]
 
 class Product(db.Model):
     __tablename__ = 'products'
