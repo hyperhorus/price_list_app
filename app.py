@@ -10,6 +10,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from flask import render_template, redirect, url_for, flash
+from sqlalchemy.orm import joinedload  # Import this at the top
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -403,10 +404,17 @@ import json
 
 @app.route('/quotations')
 def quotations():
-    # Order by newest first
-    quotes = Quotation.query.order_by(Quotation.fecha.desc()).all()
-    return render_template('quotations/index.html', quotes=quotes)
+    # We use joinedload to ensure the Customer data is loaded with the Quotation
+    # This prevents errors if you try to access q.customer.nombre_empresa in HTML
+    quotes = Quotation.query.options(joinedload(Quotation.customer)) \
+        .order_by(Quotation.fecha.desc()).all()
 
+    # DEBUG: Print to your terminal/console
+    # print(f"DEBUG: Found {len(quotes)} quotations in database.")
+    # for q in quotes:
+    #     print(f" - ID: {q.quotation_id}, Customer ID: {q.customer_id}")
+
+    return render_template('quotations/index.html', quotes=quotes)
 
 @app.route('/quotations/create', methods=['GET', 'POST'])
 def create_quotation():

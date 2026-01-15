@@ -1,234 +1,75 @@
 {% extends "base.html" %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{{ url_for('quotations') }}">Cotizaciones</a></li>
-<li class="breadcrumb-item active">Nueva</li>
+<li class="breadcrumb-item active">Historial de Cotizaciones</li>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- LEFT: Configuration -->
-    <div class="col-md-4">
-        <div class="card shadow-sm mb-3">
-            <div class="card-header bg-light fw-bold">1. Datos del Cliente</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Seleccionar Cliente</label>
-                    <select id="customerSelect" class="form-select">
-                        <option value="">-- Seleccione --</option>
-                        {% for c in customers %}
-                        <option value="{{ c.customer_id }}">{{ c.nombre_empresa }} ({{ c.contacto_nombre }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Vigencia (Días)</label>
-                    <input type="number" id="vigencia" class="form-control" value="15">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Tiempo Entrega (Días)</label>
-                    <input type="number" id="tiempoEntrega" class="form-control" value="5">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">% Anticipo</label>
-                    <input type="number" id="anticipo" class="form-control" value="50">
-                </div>
-            </div>
-        </div>
-
-        <div class="d-grid gap-2">
-            <button onclick="saveQuotation()" class="btn btn-success btn-lg">
-                <i class="fas fa-save"></i> Guardar Cotización
-            </button>
-        </div>
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 text-primary fw-bold">
+            <i class="fas fa-history"></i> Historial
+        </h5>
+        <a href="{{ url_for('create_quotation') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Nueva
+        </a>
     </div>
-
-    <!-- RIGHT: Product Builder -->
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <span class="fw-bold">2. Productos a Cotizar</span>
-                <span class="badge bg-primary fs-6" id="grandTotal">Total: $0.00</span>
-            </div>
-            <div class="card-body">
-
-                <!-- Product Selector Line -->
-                <div class="row g-2 align-items-end border-bottom pb-3 mb-3 bg-light p-2 rounded">
-                    <div class="col-md-5">
-                        <label class="small text-muted">Producto</label>
-                        <select id="prodSelect" class="form-select form-select-sm" onchange="updatePriceInput()">
-                            <option value="" data-price="0">-- Buscar Producto --</option>
-                            {% for p in products %}
-                            <option value="{{ p.clave_producto }}" data-price="{{ p.precio_unitario }}"
-                                    data-name="{{ p.nombre_producto }}">
-                                {{ p.clave_producto }} - {{ p.nombre_producto }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="small text-muted">Precio Unit.</label>
-                        <input type="number" id="prodPrice" class="form-control form-control-sm">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="small text-muted">Cantidad</label>
-                        <input type="number" id="prodQty" class="form-control form-control-sm" value="1">
-                    </div>
-                    <div class="col-md-3">
-                        <button onclick="addProductRow()" class="btn btn-primary btn-sm w-100">
-                            <i class="fas fa-plus"></i> Agregar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Table of added items -->
-                <table class="table table-sm table-striped">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>Producto</th>
-                        <th width="100">Cant.</th>
-                        <th width="120">Precio</th>
-                        <th width="120">Pers. ($)</th>
-                        <th width="120">Subtotal</th>
-                        <th width="50"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for q in quotes %}
-                    <!-- ... your existing rows ... -->
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="fas fa-file-invoice fa-3x mb-3"></i><br>
-                            No hay cotizaciones registradas.<br>
-                            <a href="{{ url_for('create_quotation') }}" class="btn btn-primary mt-2">Crear la
-                                primera</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-
-                <div class="mb-3 mt-3">
-                    <label class="form-label">Notas Generales / Comentarios</label>
-                    <textarea id="notas" class="form-control" rows="2"></textarea>
-                </div>
-
-            </div>
-        </div>
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Vigencia</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in quotes %}
+                <tr>
+                    <td><strong>#{{ q.quotation_id }}</strong></td>
+                    <td>
+                        <!-- Fail-safe check: If customer exists, show name, else show ID -->
+                        {% if q.customer %}
+                            {{ q.customer.nombre_empresa }}<br>
+                            <small class="text-muted">{{ q.customer.contacto_nombre }}</small>
+                        {% else %}
+                            <span class="text-danger">Cliente No Encontrado (ID: {{ q.customer_id }})</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ q.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ q.vigencia_dias }} días</td>
+                    <td class="fw-bold text-success">${{ "%.2f"|format(q.total) }}</td>
+                    <td>
+                        <span class="badge {% if q.status == 'Aceptada' %}bg-success{% elif q.status == 'Borrador' %}bg-secondary{% else %}bg-primary{% endif %}">
+                            {{ q.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('view_quotation', q_id=q.quotation_id) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <!-- This runs if the list 'quotes' is empty -->
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted bg-light">
+                        <i class="fas fa-folder-open fa-3x mb-3 text-secondary"></i><br>
+                        <h4>No se encontraron cotizaciones</h4>
+                        <p>Asegúrate de haber guardado correctamente la primera cotización.</p>
+                        <a href="{{ url_for('create_quotation') }}" class="btn btn-primary mt-2">
+                            Crear Nueva Cotización
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-
-<script>
-    let items = [];
-
-    function updatePriceInput() {
-        const select = document.getElementById('prodSelect');
-        const price = select.options[select.selectedIndex].getAttribute('data-price');
-        document.getElementById('prodPrice').value = price;
-    }
-
-    function addProductRow() {
-        const select = document.getElementById('prodSelect');
-        const clave = select.value;
-        if(!clave) return alert("Seleccione un producto");
-
-        const name = select.options[select.selectedIndex].getAttribute('data-name');
-        const price = parseFloat(document.getElementById('prodPrice').value) || 0;
-        const qty = parseInt(document.getElementById('prodQty').value) || 1;
-
-        // Add to array
-        const item = {
-            id: Date.now(), // Temp ID for DOM
-            clave_producto: clave,
-            name: name,
-            cantidad: qty,
-            precio: price,
-            costo_personalizacion: 0, // Default, editable in row
-            tecnica: '',
-            ubicacion: ''
-        };
-        items.push(item);
-        renderTable();
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('quotationTableBody');
-        tbody.innerHTML = '';
-        let total = 0;
-
-        items.forEach((item, index) => {
-            const subtotal = (item.precio + item.costo_personalizacion) * item.cantidad;
-            total += subtotal;
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>
-                    <small class="fw-bold">${item.clave_producto}</small><br>${item.name}
-                    <input type="text" class="form-control form-control-sm mt-1" placeholder="Técnica / Detalles"
-                           onchange="updateItem(${index}, 'tecnica', this.value)" value="${item.tecnica}">
-                </td>
-                <td>
-                    <input type="number" class="form-control form-control-sm" value="${item.cantidad}"
-                           onchange="updateItem(${index}, 'cantidad', this.value)">
-                </td>
-                <td>
-                    <input type="number" class="form-control form-control-sm" value="${item.precio}"
-                           onchange="updateItem(${index}, 'precio', this.value)">
-                </td>
-                <td>
-                    <input type="number" class="form-control form-control-sm" value="${item.costo_personalizacion}"
-                           onchange="updateItem(${index}, 'costo_personalizacion', this.value)">
-                </td>
-                <td class="fw-bold text-end">$${subtotal.toFixed(2)}</td>
-                <td>
-                    <button class="btn btn-danger btn-sm py-0" onclick="removeItem(${index})">&times;</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.getElementById('grandTotal').innerText = `Total: $${total.toFixed(2)}`;
-    }
-
-    function updateItem(index, field, value) {
-        if(field === 'tecnica') items[index][field] = value;
-        else items[index][field] = parseFloat(value) || 0;
-        renderTable();
-    }
-
-    function removeItem(index) {
-        items.splice(index, 1);
-        renderTable();
-    }
-
-    function saveQuotation() {
-        const customerId = document.getElementById('customerSelect').value;
-        if(!customerId) return alert("Seleccione un cliente");
-        if(items.length === 0) return alert("Agregue al menos un producto");
-
-        const data = {
-            customer_id: customerId,
-            vigencia_dias: document.getElementById('vigencia').value,
-            tiempo_entrega_dias: document.getElementById('tiempoEntrega').value,
-            anticipo: document.getElementById('anticipo').value,
-            notas_generales: document.getElementById('notas').value,
-            items: items
-        };
-
-        fetch("{{ url_for('create_quotation') }}", {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(res => {
-            if(res.success) {
-                window.location.href = res.redirect;
-            } else {
-                alert("Error: " + res.error);
-            }
-        });
-    }
-</script>
 {% endblock %}
