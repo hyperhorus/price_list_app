@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('quotations') }}">Cotizaciones</a></li>
+<li class="breadcrumb-item active">Cotización #{{ quote.quotation_id }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                
+                <!-- Header -->
+                <div class="d-flex justify-content-between mb-4">
+                    <div>
+                        <h2 class="fw-bold text-primary">COTIZACIÓN</h2>
+                        <h5 class="text-muted">#{{ quote.quotation_id }}</h5>
+                    </div>
+                    <div class="text-end">
+                        <p class="mb-1"><strong>Fecha:</strong> {{ quote.fecha.strftime('%d/%m/%Y') }}</p>
+                        <p class="mb-1"><strong>Vigencia:</strong> {{ quote.vigencia_dias }} días</p>
+                        <span class="badge bg-secondary fs-6">{{ quote.status }}</span>
+                    </div>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="row mb-5 p-3 bg-light rounded">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted small fw-bold">Cliente</h6>
+                        <h5 class="mb-0">{{ quote.customer.nombre_empresa }}</h5>
+                        <p class="mb-0">{{ quote.customer.contacto_nombre }}</p>
+                        <p class="mb-0 small">{{ quote.customer.email }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <h6 class="text-uppercase text-muted small fw-bold">Condiciones</h6>
+                        <p class="mb-0">Tiempo de Entrega: {{ quote.tiempo_entrega_dias }} días</p>
+                        <p class="mb-0">Anticipo: {{ quote.anticipo_requerido_porcentaje }}%</p>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <table class="table table-bordered mb-4">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Clave</th>
+                            <th>Descripción</th>
+                            <th>Técnica</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-end">Precio U.</th>
+                            <th class="text-end">Pers.</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in quote.details %}
+                        <tr>
+                            <td>{{ item.clave_producto }}</td>
+                            <td>{{ item.product.descripcion }}</td>
+                            <td>{{ item.tecnica_personalizacion or '-' }}</td>
+                            <td class="text-center">{{ item.cantidad }}</td>
+                            <td class="text-end">${{ "%.2f"|format(item.precio_pactado) }}</td>
+                            <td class="text-end">${{ "%.2f"|format(item.costo_personalizacion) }}</td>
+                            <td class="text-end fw-bold">${{ "%.2f"|format(item.subtotal) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-secondary">
+                            <td colspan="6" class="text-end fw-bold">GRAN TOTAL</td>
+                            <td class="text-end fw-bold fs-5">${{ "%.2f"|format(quote.total) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                {% if quote.notas_generales %}
+                <div class="mb-4">
+                    <h6 class="fw-bold">Notas:</h6>
+                    <p class="text-muted">{{ quote.notas_generales }}</p>
+                </div>
+                {% endif %}
+
+                <div class="text-center mt-5 no-print">
+                    <button onclick="window.print()" class="btn btn-outline-dark">
+                        <i class="fas fa-print"></i> Imprimir / Guardar PDF
+                    </button>
+                    <a href="{{ url_for('quotations') }}" class="btn btn-secondary ms-2">Volver</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

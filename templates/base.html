@@ -53,19 +53,39 @@
         </div>
         <div class="list-group list-group-flush">
             <!-- Products Link with Badge -->
-            <a href="{{ url_for('index') }}" class="list-group-item list-group-item-action {% if request.endpoint in ['index', 'products'] %}active{% endif %}">
+            <a href="{{ url_for('index') }}"
+               class="list-group-item list-group-item-action {% if request.endpoint in ['index', 'products'] %}active{% endif %}">
                 <i class="fas fa-boxes me-2"></i> Productos
                 <span class="sidebar-badge">{{ product_count }}</span>
             </a>
 
             <!-- Customers Link with Badge -->
-            <a href="{{ url_for('customers') }}" class="list-group-item list-group-item-action {% if request.endpoint in ['customers', 'create_customer'] %}active{% endif %}">
+            <a href="{{ url_for('customers') }}"
+               class="list-group-item list-group-item-action {% if request.endpoint in ['customers', 'create_customer'] %}active{% endif %}">
                 <i class="fas fa-users me-2"></i> Clientes
                 <span class="sidebar-badge bg-warning text-dark">{{ customer_count }}</span>
             </a>
+            <!-- ... existing Products and Customers links ... -->
 
+            <!-- SECTION DIVIDER -->
+            <div class="sidebar-heading mt-3 pt-3 border-top" style="font-size: 0.9rem; color: #adb5bd;">
+                COTIZACIONES
+            </div>
+
+            <!-- 1. NEW QUOTATION (Directly to Create.html) -->
+            <a href="{{ url_for('create_quotation') }}"
+               class="list-group-item list-group-item-action {% if request.endpoint == 'create_quotation' %}active{% endif %}">
+                <i class="fas fa-plus-circle me-2"></i> Nueva Cotización
+            </a>
+
+            <!-- 2. HISTORY (Directly to Index.html) -->
+            <a href="{{ url_for('quotations') }}"
+               class="list-group-item list-group-item-action {% if request.endpoint == 'quotations' or request.endpoint == 'view_quotation' %}active{% endif %}">
+                <i class="fas fa-history me-2"></i> Historial
+            </a>
             <!-- Print Link -->
-            <a href="{{ url_for('print_all_products') }}" target="_blank" class="list-group-item list-group-item-action">
+            <a href="{{ url_for('print_all_products') }}" target="_blank"
+               class="list-group-item list-group-item-action">
                 <i class="fas fa-print me-2"></i> Imprimir Lista
             </a>
         </div>
@@ -82,27 +102,28 @@
 
                 <!-- Global Search Box -->
                 <!-- GLOBAL SEARCH BAR -->
-<form class="d-flex ms-auto mt-2 mt-lg-0 me-3"
-      action="{% if 'customer' in request.endpoint %}{{ url_for('customers') }}{% else %}{{ url_for('index') }}{% endif %}"
-      method="GET">
+                <form class="d-flex ms-auto mt-2 mt-lg-0 me-3"
+                      action="{% if 'customer' in request.endpoint %}{{ url_for('customers') }}{% else %}{{ url_for('index') }}{% endif %}"
+                      method="GET">
 
-    <div class="input-group">
-        <input class="form-control form-control-sm"
-               type="search"
-               name="search"
-               value="{{ search if search else '' }}"
-               placeholder="{% if 'customer' in request.endpoint %}Buscar clientes...{% else %}Buscar productos...{% endif %}"
-               aria-label="Search">
-        <button class="btn btn-outline-secondary btn-sm" type="submit">
-            <i class="fas fa-search"></i>
-        </button>
-    </div>
-</form>
+                    <div class="input-group">
+                        <input class="form-control form-control-sm"
+                               type="search"
+                               name="search"
+                               value="{{ search if search else '' }}"
+                               placeholder="{% if 'customer' in request.endpoint %}Buscar clientes...{% else %}Buscar productos...{% endif %}"
+                               aria-label="Search">
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
 
                 <!-- Quick Actions Dropdown -->
                 <ul class="navbar-nav mt-2 mt-lg-0">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle btn btn-primary text-white btn-sm px-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle btn btn-primary text-white btn-sm px-3" href="#"
+                           id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-plus-circle"></i> Nuevo
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -127,14 +148,14 @@
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
 
             <!-- Main Content Injection -->

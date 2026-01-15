@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
-from models import db, Product, ImpresionChoice, ColorsChoice,Customer
+from models import db, Product, ImpresionChoice, ColorsChoice, Customer, Quotation, QuotationDetail
 from forms import ProductForm, CustomerForm
 from config import Config
 from datetime import datetime
@@ -34,6 +34,7 @@ def inject_counts():
         product_count=Product.query.count(),
         customer_count=Customer.query.count()
     )
+
 
 # ==================== ROUTES ====================
 
@@ -318,7 +319,10 @@ def print_all_products():
         download_name=f'ListaPrecios_{datetime.now().strftime("%Y%m%d")}.pdf'
     )
 
+
 from sqlalchemy import or_  # Make sure to import or_
+
+
 @app.route('/customers')
 def customers():
     # 1. Get the search term from the URL
@@ -343,6 +347,7 @@ def customers():
     # 4. Pass 'customers' AND 'search' back to the template
     return render_template('customers/index.html', customers=customers, search=search)
 
+
 @app.route('/customer/create', methods=['GET', 'POST'])
 def create_customer():
     form = CustomerForm()
@@ -364,6 +369,7 @@ def create_customer():
 
     return render_template('customers/create.html', form=form)
 
+
 @app.route('/customer/<int:customer_id>/edit', methods=['GET', 'POST'])
 def edit_customer(customer_id):
     customer = Customer.query.get_or_404(customer_id)
@@ -382,10 +388,87 @@ def edit_customer(customer_id):
 
     return render_template('customers/edit.html', form=form, customer=customer)
 
+
 @app.route('/customer/<int:customer_id>')
 def view_customer(customer_id):
     customer = Customer.query.get_or_404(customer_id)
     return render_template('customers/view.html', customer=customer)
+
+
+from flask import jsonify, request
+import json
+
+
+# --- QUOTATION ROUTES ---
+
+@app.route('/quotations')
+def quotations():
+    # Order by newest first
+    quotes = Quotation.query.order_by(Quotation.fecha.desc()).all()
+    return render_template('quotations/index.html', quotes=quotes)
+
+
+@app.route('/quotations/create', methods=['GET', 'POST'])
+def create_quotation():
+    # --- POST: SAVE DATA ---
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+
+            # 1. Create Header
+            new_quote = Quotation(
+                customer_id=int(data['customer_id']),
+                vigencia_dias=int(data.get('vigencia_dias', 15)),
+                status='Borrador',
+                notas_generales=data.get('notas_generales'),
+                tiempo_entrega_dias=int(data.get('tiempo_entrega_dias', 5)),
+                anticipo_requerido_porcentaje=float(data.get('anticipo', 50))
+            )
+            db.session.add(new_quote)
+            db.session.flush()
+
+            # 2. Create Details
+            for item in data['items']:
+                detail = QuotationDetail(
+                    quotation_id=new_quote.quotation_id,
+                    clave_producto=item['clave_producto'],
+                    cantidad=int(item['cantidad']),
+                    precio_pactado=float(item['precio']),
+                    tecnica_personalizacion=item.get('tecnica'),
+                    costo_personalizacion=float(item.get('costo_personalizacion', 0)),
+                    ubicacion_impresion=item.get('ubicacion'),
+                    comentarios_diseno=item.get('comentarios')
+                )
+                db.session.add(detail)
+
+            db.session.commit()
+            return jsonify({'success': True, 'redirect': url_for('view_quotation', q_id=new_quote.quotation_id)})
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    # --- GET: LOAD FORM DATA ---
+
+    # We rename these variables to avoid "shadowing" warnings
+    all_customers = Customer.query.order_by(Customer.nombre_empresa).all()
+    active_products = Product.query.filter_by(available=True).order_by(Product.tipo_producto).all()
+
+    # Debug print to check in your console if data is actually loading
+    print(f"Loaded {len(all_customers)} customers and {len(active_products)} products.")
+
+    return render_template(
+        'quotations/create.html',
+        customers=all_customers,  # Pass 'all_customers' as 'customers' to the template
+        products=active_products  # Pass 'active_products' as 'products' to the template
+    )
+
+
+@app.route('/quotations/<int:q_id>')
+def view_quotation(q_id):
+    quote = Quotation.query.get_or_404(q_id)
+    return render_template('quotations/view.html', quote=quote)
+
 
 if __name__ == '__main__':
     print("\n" + "=" * 60)

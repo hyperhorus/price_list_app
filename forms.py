@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, IntegerField, DecimalField, SelectField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional, NumberRange, Regexp
 from models import ImpresionChoice, ColorsChoice
-
+from email_validator import validate_email, EmailNotValidError
 class ProductForm(FlaskForm):
     """Form for creating and editing products"""
 

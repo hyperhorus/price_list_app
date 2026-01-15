@@ -109,3 +109,51 @@ class Product(db.Model):
             'precio_cliente_mayorista': float(self.precio_cliente_mayorista) if self.precio_cliente_mayorista else 0,
             'available': self.available,
         }
+
+# ... (Keep existing Customer and Product models exactly as they are) ...
+
+class Quotation(db.Model):
+    __tablename__ = 'quotations'
+
+    quotation_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.customer_id'))
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    vigencia_dias = db.Column(db.Integer, default=15)
+    status = db.Column(db.Enum('Borrador', 'Enviada', 'Aceptada', 'Cancelada'), default='Borrador')
+    notas_generales = db.Column(db.Text)
+    tiempo_entrega_dias = db.Column(db.Integer, default=5)
+    anticipo_requerido_porcentaje = db.Column(db.Numeric(5, 2), default=50.00)
+
+    # Relationships
+    customer = db.relationship('Customer', backref='quotations')
+    details = db.relationship('QuotationDetail', backref='quotation', cascade="all, delete-orphan")
+
+    @property
+    def total(self):
+        """Calculate total sum of details"""
+        return sum(d.subtotal for d in self.details)
+
+class QuotationDetail(db.Model):
+    __tablename__ = 'quotation_details'
+
+    detail_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.quotation_id'))
+    clave_producto = db.Column(db.String(50), db.ForeignKey('products.clave_producto'))
+    cantidad = db.Column(db.Integer, default=1)
+    precio_pactado = db.Column(db.Numeric(10, 2), default=0.00)
+    tecnica_personalizacion = db.Column(db.String(100))
+    costo_personalizacion = db.Column(db.Numeric(10, 2), default=0.00)
+    comentarios_diseno = db.Column(db.Text)
+    url_logo_diseno = db.Column(db.String(255))
+    ubicacion_impresion = db.Column(db.String(100))
+
+    # Relationship to Product (Using clave_producto as the link)
+    product = db.relationship('Product', foreign_keys=[clave_producto])
+
+    @property
+    def subtotal(self):
+        # Calculate (Price + Customization Cost) * Quantity
+        price = float(self.precio_pactado or 0)
+        custom_cost = float(self.costo_personalizacion or 0)
+        qty = int(self.cantidad or 0)
+        return (price + custom_cost) * qty
